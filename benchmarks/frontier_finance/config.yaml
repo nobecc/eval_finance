@@ -1,0 +1,3 @@
+# Supply three independent OpenAI-compatible judge configs for jury grading.
+# Empty list explicitly uses the shared judge once (custom panel, warning).
+judges: []

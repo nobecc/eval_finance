@@ -1,0 +1,11 @@
+{
+  "task_id": "example-1",
+  "state": "completed",
+  "answer": "Revenue was 100.",
+  "allowed_tools": ["lookup"],
+  "trace": [
+    {"thought": "Retrieve revenue.", "calls": [
+      {"call_id": "c1", "tool": "lookup", "args": {"year": 2024}, "output": {"revenue": 100}}
+    ]}
+  ]
+}

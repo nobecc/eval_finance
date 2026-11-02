@@ -1,0 +1,9 @@
+# Standalone smoke example: no native references or judge are required.
+reward:
+  weights:
+    answer_quality: 0
+    trajectory_evidence: 0
+    tool_protocol: 1
+    goal_progress: 0
+    step_efficiency: 0
+    milestone_timeliness: 0

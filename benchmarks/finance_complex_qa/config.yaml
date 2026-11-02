@@ -1,0 +1,2 @@
+# Uses native gold/reference grading: 0, 0.5, or 1.
+judge: {}

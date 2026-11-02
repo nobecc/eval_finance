@@ -1,0 +1,2 @@
+# Explicit non-benchmark answer judge; no benchmark process components.
+judge: {}

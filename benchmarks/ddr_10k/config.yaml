@@ -1,0 +1,5 @@
+# Supply a checklist directly, or explicitly configure the native QA file.
+qa_file: null
+reward:
+  weights:
+    trajectory_evidence: 0.4

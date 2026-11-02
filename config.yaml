@@ -1,0 +1,29 @@
+# Evaluation-only configuration. Never passed to the finance agent.
+# Shared transport and reward envelope defaults. Benchmark-owned configs
+# live in eval_finance/benchmarks/<name>/config.yaml. Report shape has no reward.
+# These are local training rewards, not hosted official benchmark scores.
+fallback_judge: false
+
+judge:
+  model: GLM-5.3-W4A8C8
+  base_url: http://10.140.158.149:23455/v1
+  api_key: EMPTY
+  timeout_s: 600
+  max_tokens: 8192
+  max_retries: 2
+  concurrency: 4
+
+reward:
+  weights:
+    answer_quality: 1.0
+    trajectory_evidence: 0.0
+    tool_protocol: 0.1
+    goal_progress: 0.0
+    step_efficiency: 0.0
+    milestone_timeliness: 0.0
+  # 0 preserves the complete report. No first-20-findings restriction.
+  max_report_chars: 0
+  # Per DDR tool interaction or DataClaw assistant turn; all remain counted.
+  # Clipping is explicitly recorded in reward.json and the judge context.
+  max_message_chars: 16384
+
