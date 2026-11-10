@@ -11,9 +11,9 @@
 
 新 harness 的接入只需实现一次输出适配，并由评测调用方附加所选 benchmark 的原生参考记录或 rubric。参考答案和 judge 配置仍留在评测侧。完整字段、轨迹语义和最小示例见 [CASE_SCHEMA.md](CASE_SCHEMA.md)；可运行的接入示例见 [examples/custom_harness.py](examples/custom_harness.py)。
 
-已整理的本地任务与评测数据见 [data/README.md](data/README.md)：九个 benchmark 共 3,429 条任务，分别提供任务与参考索引、原生文件和运行材料（注册表中的第十个 `odysseysmega` 是单一固定任务，rubric 随包内置，无数据集行）。FrontierFinance 已通过授权账号补齐 220 条任务。需要使用本地资源时，显式传入 `data/eval_config.yaml`；公共默认配置保持不变。
+已整理的本地任务与评测数据见 [data/README.md](data/README.md)：九个 benchmark 共 3,429 条任务，分别提供任务与参考索引、原生文件和运行材料。FrontierFinance 已通过授权账号补齐 220 条任务。需要使用本地资源时，显式传入 `data/eval_config.yaml`；公共默认配置保持不变。
 
-每个已注册的 benchmark 独立负责输入协议、评审模型（judge）提示词、评分结果解析和原生指标汇总。公共代码负责评测样例的输入输出、HTTP 请求、调用统计、工具协议检查，以及最终的 `eval_finance.reward.v1` 输出结构。已注册的任务缺少原生参考输入时会直接报错，不会回退到 DDR 评分或仅根据任务目标评分的 judge；`odysseysmega` 例外在于其权威 task/rubric（`benchmarks/odysseysmega/task.md`）随包发布，case 级 `task_file` 可覆盖。
+每个已注册的 benchmark 独立负责输入协议、评审模型（judge）提示词、评分结果解析和原生指标汇总。公共代码负责评测样例的输入输出、HTTP 请求、调用统计、工具协议检查，以及最终的 `eval_finance.reward.v1` 输出结构。已注册的任务缺少原生参考输入时会直接报错，不会回退到 DDR 评分或仅根据任务目标评分的 judge。
 
 评测实现仅依赖本包代码、Python 标准库和 PyYAML。原生参考数据通过参数或配置显式指定，不依赖其他评测仓库的目录布局。
 
@@ -34,7 +34,7 @@ eval_finance/
     reward_calculator.py       benchmark 自己的评分逻辑
 ```
 
-DDR 还拥有独立的 `judge.py` 和 `inputs.py`。FinSearchComp T2/T3 的原始评分协议相同，因此共享其公开的二元评分辅助逻辑；两者仍有各自的入口、配置和任务分组校验。FinanceAgent 的不同版本共享原生 rubric（评分细则）的输入解析和 judge 编号序列化，提示词和聚合规则分别实现；明确的输入编号及返回结构见 [FinanceAgent judge 协议](benchmarks/FINANCE_AGENT_PROTOCOL.md)。OdysseysMega 是单一固定任务：一次 judge 调用对 15 条编号 rubric 检查（C1–C15）逐条给出二值判定，`check_pass_rate`（即 Check Pass %）由本地按通过比例计算，不采信 judge 自报的总分。
+DDR 还拥有独立的 `judge.py` 和 `inputs.py`。FinSearchComp T2/T3 的原始评分协议相同，因此共享其公开的二元评分辅助逻辑；两者仍有各自的入口、配置和任务分组校验。FinanceAgent 的不同版本共享原生 rubric（评分细则）的输入解析和 judge 编号序列化，提示词和聚合规则分别实现；明确的输入编号及返回结构见 [FinanceAgent judge 协议](benchmarks/FINANCE_AGENT_PROTOCOL.md)。
 
 ## 已注册的评分方法及所需输入
 
@@ -49,7 +49,6 @@ DDR 还拥有独立的 `judge.py` 和 `inputs.py`。FinSearchComp T2/T3 的原�
 | `finance_agent_bench_v2` | 按严重程度加权的部分得分，受 `must_pass` 关键项门控 | 带 `modifiers` 的原始 v2 `Rubric` |
 | `finfirst` | 专家权重加权的原子评分、严格通过判定和能力分组分数 | 原始 `rubric_annotated` 或带权重的 `rubrics` |
 | `frontier_finance` | 以查询日期为基准的 rubric 满足率，以及按配置顺序进行的评审团多数投票 | 原生 `rubrics`、`query_date`，以及可选的 judge 评审团 |
-| `odysseysmega` | 15 条固定 rubric 检查的通过率（`check_pass_rate`） | 无必需输入：权威 task/rubric 随包发布；可用 case 级 `task_file` 覆盖 |
 
 所有 benchmark 都将答案主指标映射到 `answer_quality`。DDR 支持逐消息的 `trajectory_evidence`；DataClaw 还支持 `goal_progress`、`step_efficiency` 和 `milestone_timeliness`。公共的 `tool_protocol` 只评价工具调用。每个 benchmark 声明自己支持的 component 子集；给不支持的项配置正权重会报错。原生指标和判定细节保存在 `metrics` 中，包括已经计入 FinFIRST 主分的来源核验指标。运行完成状态通过顶层 `rollout_status` 表达。
 

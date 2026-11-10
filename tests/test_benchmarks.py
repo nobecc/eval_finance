@@ -41,8 +41,8 @@ class BenchmarkTests(unittest.TestCase):
         self.assertEqual(doc['components']['tool_protocol']['detail']['metric'],'valid_tool_call_ratio')
         return doc,requests
 
-    def test_registry_has_ten_concrete_entries_and_unknown_never_falls_back(self):
-        self.assertEqual(len(EVALUATORS),10)
+    def test_registry_has_nine_concrete_entries_and_unknown_never_falls_back(self):
+        self.assertEqual(len(EVALUATORS),9)
         for name in EVALUATORS:
             self.assertTrue(callable(get_evaluator(name).score))
             self.assertTrue((Path(__file__).resolve().parents[1]/'benchmarks'/name/'config.yaml').is_file())
@@ -50,10 +50,9 @@ class BenchmarkTests(unittest.TestCase):
             self.calc.evaluate_case({**self.base,'benchmark':'unknown','reference_answer':'A'})
 
     def test_registered_benchmarks_reject_ddr_checklist_as_native_inputs(self):
-        # ddr_10k owns the checklist natively; odysseysmega owns one fixed
-        # task whose rubric ships inside the package, so neither reads a
-        # case checklist. Every other scorer must demand its native inputs.
-        for name in set(EVALUATORS)-{'ddr_10k','odysseysmega'}:
+        # ddr_10k owns the checklist natively. Every other scorer must
+        # demand its native inputs rather than accepting a DDR checklist.
+        for name in set(EVALUATORS)-{'ddr_10k'}:
             case={**self.base,'benchmark':name,'checklist':[{'question':'Q','answer':'A'}]}
             # Each registered scorer needs its own rubric/reference protocol.
             with self.subTest(name=name), patch('eval_finance.common.JudgeClient') as client:
@@ -96,42 +95,6 @@ class BenchmarkTests(unittest.TestCase):
             self.assertEqual(doc['components']['answer_quality']['score'],value)
         with self.assertRaises(EvaluationError):
             self.evaluate('finance_complex_qa',{'score':0.25},reference_answer='Reference')
-
-    def test_odysseysmega_pass_rate_uses_packaged_task_and_local_total(self):
-        response={'checks':[{'id':f'C{n}','pass':n<=12,'evidence':'e'} for n in range(1,16)],'notes':'ok'}
-        doc,requests=self.evaluate('odysseysmega',response)
-        self.assertEqual(doc['components']['answer_quality']['score'],0.8)
-        self.assertEqual(doc['metrics']['check_pass_rate'],0.8)
-        self.assertEqual(sum(doc['metrics']['checks'].values()),12)
-        self.assertEqual(doc['metrics']['checks']['C13'],False)
-        # The packaged fixed task supplies the task text and the 15-check rubric.
-        self.assertIn('LLM Judge Rubric',requests[0].args[1])
-        self.assertIn('C15 final_playbook',requests[0].args[1])
-
-    def test_odysseysmega_rejects_incomplete_or_malformed_judgments(self):
-        complete={'checks':[{'id':f'C{n}','pass':True} for n in range(1,16)],'notes':''}
-        missing={**complete,'checks':complete['checks'][:-1]}
-        unboolean={**complete,'checks':[{**complete['checks'][0],'pass':'yes'},*complete['checks'][1:]]}
-        with self.assertRaises(EvaluationError):
-            self.evaluate('odysseysmega',missing)
-        with self.assertRaises(EvaluationError):
-            self.evaluate('odysseysmega',unboolean)
-
-    def test_odysseysmega_empty_report_fails_all_checks_without_judging(self):
-        with patch('eval_finance.common.JudgeClient') as client:
-            doc=self.calc.evaluate_case({**self.base,'benchmark':'odysseysmega','final_report':''})
-            client.assert_not_called()
-        self.assertEqual(doc['components']['answer_quality']['score'],0)
-        self.assertEqual(sum(doc['metrics']['checks'].values()),0)
-
-    def test_odysseysmega_case_task_file_overrides_packaged_rubric(self):
-        task=self.root/'task.md'
-        task.write_text('## Prompt\nGuide task\n\n## Expected Behavior\nCover.\n\n## LLM Judge Rubric\nCustom C1..C15 rubric.\n')
-        response={'checks':[{'id':f'C{n}','pass':True} for n in range(1,16)],'notes':''}
-        doc,requests=self.evaluate('odysseysmega',response,task_file=str(task))
-        self.assertEqual(doc['components']['answer_quality']['score'],1)
-        self.assertIn('Custom C1..C15 rubric',requests[0].args[1])
-        self.assertNotIn('C15 final_playbook',requests[0].args[1])
 
     def test_dataclaw_preserves_single_and_multi_answer_rubric_total(self):
         doc,requests=self.evaluate('dataclawbench',{'scores':{'a':1,'b':0},'total':0.5,'notes':'One matches'},

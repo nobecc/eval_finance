@@ -1,2 +1,0 @@
-include CASE_SCHEMA.md REWARD_SCHEMA.md
-recursive-include examples *.py *.json *.yaml

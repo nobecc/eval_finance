@@ -6,7 +6,7 @@ EVALUATORS = {
     name: f'eval_finance.benchmarks.{name}.reward_calculator'
     for name in ('ddr_10k', 'finfirst', 'finance_agent_bench_v1_1', 'finance_agent_bench_v2',
                  'finsearchcomp_t2', 'finsearchcomp_t3', 'dataclawbench', 'finance_complex_qa',
-                 'frontier_finance', 'odysseysmega')
+                 'frontier_finance')
 }
 
 

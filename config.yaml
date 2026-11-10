@@ -21,7 +21,6 @@ reward:
     goal_progress: 0.0
     step_efficiency: 0.0
     milestone_timeliness: 0.0
-  # 0 preserves the complete report. No first-20-findings restriction.
   max_report_chars: 0
   # Per DDR tool interaction or DataClaw assistant turn; all remain counted.
   # Clipping is explicitly recorded in reward.json and the judge context.

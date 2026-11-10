@@ -1,5 +1,0 @@
-# OdysseysMega owns one fixed task: the canonical task Markdown (Prompt /
-# Expected Behavior / LLM Judge Rubric) ships with the evaluator. task_file
-# may be overridden per case for rubric iteration without a package change.
-task_file: task.md
-judge: {}
