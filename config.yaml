@@ -5,9 +5,9 @@
 fallback_judge: false
 
 judge:
-  model: GLM-5.3-W4A8C8
-  base_url: http://10.140.158.149:23455/v1
-  api_key: EMPTY
+  model: DeepSeek-V4.1-Flash
+  base_url: https://token.pjlab.org.cn/v1
+  api_key: 
   timeout_s: 600
   max_tokens: 8192
   max_retries: 2
